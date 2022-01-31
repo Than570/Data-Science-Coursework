@@ -1,0 +1,492 @@
+---
+title: "Logistic_regression_breast_cancer_diagnosis"
+author: "Thandeka Chaka and Tinashe Chisora"
+date: "11/18/2021"
+output:
+  word_document: default
+---
+
+
+```{r echo=T}
+# Set global figure size
+knitr::opts_chunk$set(fig.width=6, fig.height=3.5) 
+```
+
+## Data Characteristics Section
+
+## Read in the data
+
+```{r}
+Breastcancer = read.csv("/Users/vladimirechisora/Downloads/data-3.csv")
+
+attach(Breastcancer)
+
+ftable(diagnosis)
+
+
+dim (Breastcancer)
+```
+###Abstract
+
+The data that we are using is a sample from Mayo clinic.  The data include a number of patients that went through some tests before the doctors discovered whether they had breast cancer or not.  The data includes a number of measures on the patient's breast tumor.  Later on some of the patients were diagnosed with breast cancer which is labelled as M for malignant and for some patients it was just a breast tumor which is labeled as B for benign.  Some of the questions that we will try to during this research are as follows:
+
+  1. What are the most significant predictor variables when it comes to predicting the diagnosis of breast cancer?  This would help the doctors to make it clear on which things to look out for when carrying out the diagnosis.
+  
+  2. What is the residual standard error for this data since the data is measuring very small quantities like the size of a cell?  This might have a reflection on the methodology that has been used to collect the data.  How accurate are the instruments used to record these predictor variables?
+  
+  3. What is the prediction of the model in diagnosing cancer given the other predictor variables?  We will try to create a model that can predict whether the tumor is cancerous or not and see how accurate the model is.
+  
+In our data, we have one response variable that is the diagnosis of breast cancer. In our data people who have been diagnosed with breast cancer have been labeled M and when it is just a tumor it is labelled B.
+
+
+
+```{r}
+
+ftable(diagnosis)
+
+```
+
+The table above shows the number of patient that have been diagnosed with breast cancer.  212 patients have been diagnosed with breast cancer while for the other 357, it was just a tumor.
+
+We have 10 predictor variables variables that are different measurements of the cells on the breast tumor.
+
+###Data Characteristics
+
+##Variable characteristics
+
+#Diagnosis
+
+the diagnosis is non numeric.  First of all we are going to make it binary that is 0 for Benign and 1 for M and then proceed to show the graphical representation.
+
+```{r}
+barplot (table (diagnosis), xlab="Diagnosis", ylab="Number_of_Patients", main = "Diagnosis Barplot")
+```
+
+The plot above shows the distribution of patients who have been diagnosed with breast cancer and those one who have not.
+
+```{r}
+library (ggplot2)
+library (tidyr)
+
+ggplot(gather(Breastcancer [, 3:10]), aes(value)) + 
+  geom_histogram(bins = 8) + 
+  facet_wrap(~key, scales = 'free_x')
+
+```
+
+
+#Radius mean
+
+```{r}
+hist (radius_mean, xlab="Radius Mean")
+
+#transformation
+library ("MASS")
+
+#sqrt transformation
+sqrt.radius.m = sqrt(radius_mean)
+hist (sqrt.radius.m, xlab="Sqrt Radius Mean")
+
+#log transformation
+log.radius.m = log(radius_mean)
+hist (log.radius.m, xlab="Log Radius Mean")
+```
+
+This is the graph representing the radius mean of all the patients.  We tried a couple of transformations and the log transformation works better in this case.
+
+#Texture Mean
+
+```{r}
+hist (texture_mean, xlab="Texture Mean")
+
+#transformation
+
+#sqrt transformation
+sqrt.texture.m = sqrt(texture_mean)
+hist (sqrt.texture.m, xlab="Sqrt Texture Mean")
+
+#log transformation
+log.texture.m = log(texture_mean)
+hist (log.texture.m, xlab="Log Texture Mean")
+```
+
+Our data is left skewed with one possible outlier.  We used a square roottransformation which seemed to have worked better in dealing with the skewness and also got rid of the outlier. 
+
+#Perimeter Mean
+
+```{r}
+hist (perimeter_mean, xlab="Perimeter Mean")
+
+#transformation
+
+#sqrt transformation
+sqrt.perimeter.m = sqrt(perimeter_mean)
+hist (sqrt.perimeter.m, xlab="Sqrt Perimeter Mean")
+
+#log transformation
+log.perimeter.m = log(perimeter_mean)
+hist (log.perimeter.m, xlab="Log Perimeter Mean")
+```
+
+The perimeter mean is a liitle bit skewed to the left with no obvious outliers.  We carried out a number of transformations and the log transformation is the best transformation we have at the moment.
+
+#Area mean
+
+```{r}
+hist (area_mean, xlab="Area Mean")
+
+#transformation
+
+#sqrt transformation
+sqrt.area.m = sqrt(area_mean)
+hist (sqrt.area.m, xlab="Sqrt Area Mean")
+
+#log transformation
+log.area.m = log(area_mean)
+hist (log.area.m, xlab="Log Area Mean")
+```
+
+The area mean was left skewed and we used a couple of transformations.  The log one seems to be working better though it gives two peaks.
+
+#Smoothness Mean
+
+```{r}
+hist (smoothness_mean, xlab="Smoothness Mean")
+
+```
+
+The smoothness mean data does not have an obvious skewness in it.  There might be one possible outlier in the data set.
+
+#Compactness Mean
+
+```{r}
+hist (concavity_mean, xlab="Concavity Mean")
+
+#transformation
+
+#sqrt transformation
+root.concavity.m = sqrt(concavity_mean)
+hist (root.concavity.m, xlab="Root Concavity Mean")
+
+```
+
+
+The compactness mean data is left skewed and we did a couple of transformations and the log transformation was our best option thought it also produced two peaks.
+
+#Concavity Mean
+
+```{r}
+hist (concave.points_mean, xlab="Concave Points Mean")
+
+#transformation
+
+#sqrt transformation
+root.concave.points.m = sqrt(concave.points_mean)
+hist (root.concave.points.m, xlab="Root Concave Points Mean")
+
+
+```
+
+The initial data was obviously skewed to the left.  The only transformation that worked better was transforming it to root 2.3.
+
+#Symmetry mean
+
+```{r}
+hist (symmetry_mean, xlab="Compactness Mean")
+
+#transformation
+
+#sqrt transformation
+sqrt.symmetry.m = sqrt(symmetry_mean)
+hist (sqrt.symmetry.m, xlab="Sqrt Symmetry Mean")
+
+#log transformation
+log.symmetry.m = log(symmetry_mean)
+hist (log.symmetry.m, xlab="Log Symmetry Mean")
+```
+
+The initial data was left skewed and then we had to transform the variable by root 2.5.  The variable now looks more normally distributed than what it looked before.
+
+#Symmetry Mean
+
+```{r}
+hist (symmetry_mean, xlab="Compactness Mean")
+
+#transformation
+
+#sqrt transformation
+sqrt.symmetry.m = sqrt(symmetry_mean)
+hist (sqrt.symmetry.m, xlab="Sqrt Symmetry Mean")
+
+#log transformation
+log.symmetry.m = log(symmetry_mean)
+hist (log.symmetry.m, xlab="Log Symmetry Mean")
+```
+
+This variable also needed some log transformation in order to get rid of the left skewness.
+
+#Fractal Dimension Mean
+
+```{r}
+hist (fractal_dimension_mean, xlab="Fractal Dimension Mean")
+
+#transformation
+
+#sqrt transformation
+sqrt.fractal.dimension.m = (fractal_dimension_mean)^1/25
+
+hist (sqrt.fractal.dimension.m, xlab="Sqrt Fractal Dimension Mean")
+
+#log transformation
+log.fractal.dimension.m = log(fractal_dimension_mean)
+hist (log.fractal.dimension.m, xlab="Log Fractal Dimension Mean")
+```
+
+#Scatter plot matrix
+
+```{r fig1, fig.height = 9, fig.width = 9}
+Breastcancer$radius_mean = log.radius.m
+Breastcancer$texture_mean = log.texture.m
+Breastcancer$perimeter_mean = log.perimeter.m
+Breastcancer$area_mean = log.area.m
+Breastcancer$concavity_mean = root.concavity.m
+Breastcancer$concave.points_mean = root.concave.points.m
+Breastcancer$symmetry_mean = log.symmetry.m
+Breastcancer$fractal_dimension_mean = log.fractal.dimension.m
+
+plot (Breastcancer[,2:10], col=Breastcancer$diagnosis+1)
+```
+
+This is the matrix plot from the scatter plot.  There is some linear relationship between some of our predictor variables.  For example, there is a strong linear relationship between radius mean and perimeter mean, radius mean and area mean and perimeter mean and area mean.  These are variables that determine how big the tumor is and they mostly depend on how big radius is.  The other linearity that is there is concavity mean and concave points mean.  From the graph we can hypothesis that the greater the means of the predictor variables, the more chance of the tumor to be cancerous.  However, we were curios on how the untransformed data would look on the matrix plot.
+
+## Intial model: First model
+
+```{r}
+# Fitting the regression model:
+binary.logit = glm (data = Breastcancer, diagnosis ~ radius_mean + texture_mean + perimeter_mean + area_mean + smoothness_mean + compactness_mean + concavity_mean + concave.points_mean + symmetry_mean + fractal_dimension_mean, family = 'binomial')
+summary(binary.logit)
+
+
+```
+
+From our first model, only three predictor variables we significant, that is texture mean, area mean and smoothness. 
+
+## Plot jittered response vs. predicted values with the fitted logistic curve and a lowess fit
+
+```{r}
+logit.hp1 = predict (binary.logit)
+plot (jitter (diagnosis, 0.2) ~ logit.hp1, data=Breastcancer)
+
+```
+
+From the above jitter plot the points are more concentrated on the benign diagnosis which is 0. The concentration is less concentrated for the malignant points on the jitter plot.
+
+```{r}
+pred.logit = predict (binary.logit)
+plot(jitter(diagnosis,0.2) ~ pred.logit, data = Breastcancer, main = 'Jitter Plot')
+
+
+pred.r = predict(binary.logit, type='response')
+pred.order =order(pred.logit)
+
+lines(pred.logit[pred.order],pred.r[pred.order],col='darkblue')
+
+lines(lowess(pred.logit[pred.order], pred.r[pred.order]),col='red',lty=2)
+
+```
+
+There is a deviation from the blue and red line in the jitter plot. This can be explained by the concentration of the points in the benign diagnosis as compared to the malignant points in the data. Therefore, we reevaluate the first model to see if there are points we included that are not as significant and could be contributing to the deviation of the blue and red line in the jitter plot.
+
+## Plot residuals vs. fitted values:  plot (myfit, which=1)
+
+```{r}
+plot(binary.logit, which=1)
+```
+ 
+ From the residual vs fitted plot most of the predicted values are along the zero mean of the residuals with a few deviation as 3 points are evidently the outliers. 
+
+ 
+##Check for points with high leverage or high Cook’s Distance
+
+```{r}
+plot(binary.logit, which=5)
+```
+
+From the plot above only one point, the one marked 153 is a high leverage point.
+
+##Check for multicollinearity
+
+```{r}
+car::vif (binary.logit)
+```
+
+From the table above most of the points are correlated as they have vif value above 5 except texture_mean, smoothness_mean and the symmetry_mean.
+
+## Model Selection
+
+#Stepwise regression on the First model
+
+```{r}
+binary.logit.sw = step (binary.logit, directon='both')
+```
+
+
+
+#Retained model by the stepwise regression
+
+```{r}
+binary.logit2 = glm (data = Breastcancer, diagnosis ~ texture_mean + perimeter_mean + area_mean + smoothness_mean + compactness_mean + concave.points_mean, family = 'binomial')
+summary(binary.logit2)
+```
+From the step- wise regression performed on the initial model, we got the model with the lowest AIC value of 137.88. The predictor variables in this model are all significant with their p-values below 0.05 except for symmetry mean.  Removing the symmetry mean would increase the AIC value so we decided to keep it there.
+
+#Centering and interactions
+
+```{r}
+#Centering quantitative predictor variables
+texture.c = scale(Breastcancer$texture_mean, center = TRUE, scale = FALSE)
+perimeter.c = scale(Breastcancer$perimeter_mean, center = TRUE, scale = FALSE)
+area.c = scale(Breastcancer$area_mean, center = TRUE, scale = FALSE)
+smoothness.c = scale(Breastcancer$smoothness_mean, center = TRUE, scale = FALSE)
+compactness.c = scale(Breastcancer$compactness_mean, center = TRUE, scale = FALSE)
+concave.points.c = scale(Breastcancer$concave.points_mean, center = TRUE, scale = FALSE)
+
+#Interactions
+
+binary.logit3 = glm (data = Breastcancer, diagnosis ~ (texture.c + perimeter.c + area.c + smoothness.c
+                     + compactness.c + concave.points.c)^2, family = 'binomial')
+
+summary(binary.logit3)
+```
+
+From the above output, the centered values with the interaction values of texture mean,perimeter and area mean are most significant. There are no interaction effects that that are significant at this moment since all their p values are greater that 0.05. We decided to run another stepwise regression on this model.
+
+#Interactions on the centered and interacted model
+
+```{r}
+binary.logit.sw2 = step (binary.logit3, directon='both')
+```
+
+We got the smallest value of the AIC value in the model with the interaction effects which has the value 127.47, which is less that the one in the retained first model after step wise regression. Therefore, this qualifies as our final model.
+
+#Final Model Summary And plot
+
+```{r}
+binary.logit4 = glm (data = Breastcancer, diagnosis ~ texture.c + perimeter.c + area.c + smoothness.c 
+                     + compactness.c + concave.points.c + texture.c:perimeter.c + texture.c:area.c +
+                       texture.c:smoothness.c + perimeter.c:area.c + perimeter.c:smoothness.c +
+                       perimeter.c:concave.points.c +area.c:smoothness.c + area.c:concave.points.c +
+                       smoothness.c:compactness.c + compactness.c:concave.points.c
+                     , family = 'binomial')
+
+summary(binary.logit4)
+
+
+```
+
+The most significant predictors from the final model therefore are radius.c, texture.c, area.c, concave.points.c and radius.c:area.c.  We could not take out some of the non significant predictors since it will increase the AIC value 
+
+#Final model Diagnosis
+
+```{r}
+pred.logit = predict (binary.logit4)
+plot(jitter(diagnosis,0.2) ~ pred.logit, data = Breastcancer, main = 'Jitter Plot')
+
+
+pred.r = predict(binary.logit4, type='response')
+pred.order =order(pred.logit)
+
+lines(pred.logit[pred.order],pred.r[pred.order],col='darkblue')
+
+lines(lowess(pred.logit[pred.order], pred.r[pred.order]),col='red',lty=2)
+
+summary(binary.logit4)
+
+```
+
+The final model jitter plot has shows that the final model is fitting the our data better than the first model which suggests an improvement in our model.
+
+```{r}
+cbind.data.frame (exp.beta = exp (binary.logit4$coefficients), 
+                  exp (as.data.frame (confint(binary.logit4))))
+```
+
+
+#Max Likelihood test
+
+```{r}
+1 - pchisq(binary.logit4$null.deviance - binary.logit4$deviance, binary.logit4$df.null -
+             binary.logit4$df.residual)
+```
+
+The likelihood test from the above has a value of 0.  We were worried about multicollinearirty of the data which was shown by the matrix.  However due to our low VIF value we do not have be worried about the collinearity.  
+
+#Residual Plot
+
+```{r}
+par(mfrow = c(1,2)) 
+plot(binary.logit4, which=c(1,5))
+```
+
+The residual vs fitted plot is normal with a deviation of a few points namely points 380, 153 and 276. Point 389 is a high leverage point with pount 153 and 276 having hugh cook`s distance value.
+
+```{r}
+#------------------------Deviance test of lack of fit--------------------
+
+# First model
+pchisq(deviance(binary.logit), df.residual(binary.logit), lower=F)
+
+# Final model
+pchisq(deviance(binary.logit4), df.residual(binary.logit4), lower=F)
+```
+
+There is no significant lack of fit in either the first model or the final model (p > 0.05), with the deviance from both models equal to 1.
+
+```{r}
+library(ROCR)
+pred1 <- prediction(binary.logit4$fitted.values, binary.logit4$y)
+perf1 <- performance(pred1,"tpr","fpr")
+auc1 <- performance(pred1,"auc")@y.values[[1]] 
+auc1
+
+plot(perf1, lwd=2, col=2)
+abline(0,1)
+legend(0.6, 0.3, c(paste ("AUC=", round (auc1, 4), sep="")), lwd=2, col=2)
+roc.x = slot (perf1, "x.values")[[1]] 
+roc.y = slot (perf1, "y.values") [[1]]
+cutoffs = slot (perf1, "alpha.values") [[1]]
+auc.table = cbind.data.frame(cutoff=pred1@cutoffs,tp=pred1@tp, fp=pred1@fp, tn=pred1@tn,fn=pred1@fn)
+names (auc.table) = c("Cutoff", "TP", "FP", "TN", "FN") 
+auc.table$sensitivity = auc.table$TP / (auc.table$TP +auc.table$FN)
+auc.table$specificity = auc.table$TN / (auc.table$TN + auc.table$FP) 
+auc.table$FalsePosRate = 1 - auc.table$specificity 
+auc.table$sens_spec = auc.table$sensitivity + auc.table$specificity
+auc.best = auc.table [auc.table$sens_spec == max (auc.table$sens_spec),] 
+auc.best
+```
+
+Based on our ROC value our model managed to fit 99.53 % of our data.  We got high specifity and sensitivity values.  Our cut off point was 0.555.  We had 199 true positives, 4 false positives, 353 true negetives and 13 false positive.  This shows how well our model managed to fit the data set.
+
+```{r}
+preds = predict (binary.logit4, se.fit = T)
+pred.df = cbind.data.frame (Breastcancer, as.data.frame (preds))
+pred.df$lwr = pred.df$fit - 1.96 * pred.df$se.fit
+pred.df$upr = pred.df$fit + 1.96 * pred.df$se.fit
+pred.df$fit.pr = round (exp (pred.df$fit) / (1 + exp (pred.df$fit)), 3) 
+pred.df$lwr.pr = round (exp (pred.df$lwr) / (1 + exp (pred.df$lwr)), 3)
+pred.df$upr.pr = round (exp (pred.df$upr) / (1 + exp (pred.df$upr)), 3)
+```
+
+```{r}
+pred.df [c(30,47,78,21,16,11), c(2,5:7,14:16)]
+```
+
+```{r}
+pred.df$pred.dis = ifelse (pred.df$fit.pr >= auc.best$Cutoff[1], "Pred.Yes", "Pred.No")
+table (pred.df$diagnosis, pred.df$pred.dis)
+
+```
+
+# Conclusions
+
+The most significant predictors are radius mean, texture mean, area mean and concave points mean.  Our model successfully predicted 199 as patients diagnosed with breast cancer, and had false positive of 4 patients. Therefore, that is why are ROC curve had a high AUC value of 0.9953.
